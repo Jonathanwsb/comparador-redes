@@ -1,7 +1,6 @@
 import streamlit as st
 import geopandas as gpd
 import pandas as pd
-import fiona
 import folium
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -87,7 +86,8 @@ def ler_arquivo(arquivo_bytes, nome_arquivo):
 
     ext_real = os.path.splitext(caminho)[1].lower()
     if ext_real == '.gpkg':
-        camadas = fiona.listlayers(caminho)
+        from pyogrio import list_layers
+        camadas = [l[0] for l in list_layers(caminho)]
     else:
         camadas = [os.path.basename(caminho)]
 
@@ -96,9 +96,9 @@ def ler_arquivo(arquivo_bytes, nome_arquivo):
 
 def carregar_camada(caminho, ext, camada):
     if ext == '.gpkg':
-        return gpd.read_file(caminho, layer=camada)
+        return gpd.read_file(caminho, layer=camada, engine='pyogrio')
     else:
-        return gpd.read_file(caminho)
+        return gpd.read_file(caminho, engine='pyogrio')
 
 
 def comparar(gdf_a, gdf_n, campo_id):
